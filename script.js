@@ -27,29 +27,7 @@ function addMessage(message, isUser=false, isThinking=false) {
         const text = document.createElement("div");
         text.className = "text";
 
-        // Process message for formatting
-        let formattedMessage = message
-            .replace(/\n\n/g, '</p><p>')
-            .replace(/\n/g, '<br>')
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            .replace(/^(\d+)\.\s(.*)$/gm, '<li data-type="numbered">$2</li>')
-            .replace(/^\*\s(.*)$/gm, '<li>$1</li>')
-            .replace(/^>\s(.*)$/gm, '<blockquote>$1</blockquote>');
-
-        // Handle lists
-        formattedMessage = formattedMessage.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, (match) => {
-            if (match.includes('data-type="numbered"')) {
-                return '<ol>' + match.replace(/data-type="numbered"/g, '') + '</ol>';
-            } else {
-                return '<ul>' + match + '</ul>';
-            }
-        });
-        formattedMessage = '<p>' + formattedMessage + '</p>';
-        formattedMessage = formattedMessage.replace(/<p><\/p>/g, '');
-
-        text.innerHTML = formattedMessage;
+        text.innerHTML = ''; // Start empty for typing animation
         content.appendChild(text);
         messageDiv.appendChild(content);
     }
@@ -57,6 +35,44 @@ function addMessage(message, isUser=false, isThinking=false) {
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     return messageDiv;
+}
+
+function typeMessage(messageDiv, message) {
+    const textElement = messageDiv.querySelector('.text');
+    let index = 0;
+
+    // Process message for formatting
+    let formattedMessage = message
+        .replace(/\n\n/g, '<br><br>')
+        .replace(/\n/g, '<br>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`(.*?)`/g, '<code>$1</code>')
+        .replace(/^(\d+)\.\s(.*)$/gm, '<li data-type="numbered">$2</li>')
+        .replace(/^\*\s(.*)$/gm, '<li>$1</li>')
+        .replace(/^>\s(.*)$/gm, '<blockquote>$1</blockquote>');
+
+    // Handle lists
+    formattedMessage = formattedMessage.replace(/(<li[^>]*>.*?<\/li>\s*)+/g, (match) => {
+        if (match.includes('data-type="numbered"')) {
+            return '<ol>' + match.replace(/data-type="numbered"/g, '') + '</ol>';
+        } else {
+            return '<ul>' + match + '</ul>';
+        }
+    });
+
+    const chars = formattedMessage.split('');
+
+    function typeChar() {
+        if (index < chars.length) {
+            textElement.innerHTML += chars[index];
+            index++;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(typeChar, 20); // Adjust speed here (milliseconds per character)
+        }
+    }
+
+    typeChar();
 }
 
 
@@ -72,11 +88,14 @@ async function sendMessage(message) {
         // Remove thinking animation
         thinkingMessage.remove();
 
-        addMessage(response);
+        // Add AI message and start typing animation
+        const aiMessage = addMessage("", false);
+        typeMessage(aiMessage, response);
     } catch (err) {
         console.error(err);
         thinkingMessage.remove();
-        addMessage("⚠️ Sorry, something went wrong.");
+        const errorMessage = addMessage("", false);
+        typeMessage(errorMessage, "⚠️ Sorry, something went wrong.");
     }
 }
 
@@ -126,4 +145,5 @@ document.addEventListener("keydown", (e) => {
 });
 
 // Initial greeting
-addMessage("👋 Hello! I am Brobits, Ask me anything!");
+const greetingMessage = addMessage("", false);
+typeMessage(greetingMessage, "👋 Hello! I am Brobits, Ask me anything!");
