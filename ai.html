@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    #chat { max-width: 600px; margin: 0 auto; }
+    .message { margin: 10px 0; }
+    .user { color: #2C6E49; }
+    .bot { color: #1E1E1E; }
+  </style>
+</head>
+<body>
+  <div id="chat">
+    <div class="message bot">Hi! I’m your chatbot. Ask me anything.</div>
+  </div>
+  <input type="text" id="input" placeholder="Type your message…" style="width:80%;" />
+  <button id="send">Send</button>
+
+  <script>
+    const endpoint = "https://torgpt.space/api/v1/chat";
+
+    document.getElementById("send").addEventListener("click", async () => {
+      const inputEl = document.getElementById("input");
+      const userMsg = inputEl.value.trim();
+      if (!userMsg) return;
+
+      appendMessage("user", userMsg);
+      inputEl.value = "";
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [
+              { role: "user", content: userMsg }
+            ]
+          })
+        });
+
+        if (!response.ok) throw new Error("Network response was not ok");
+
+        const data = await response.json();
+        // Assuming the reply text is in data.reply or similar
+        const botReply = data.reply || data.choices?.[0]?.message?.content || "Sorry, I didn’t get that.";
+
+        appendMessage("bot", botReply);
+      } catch (error) {
+        console.error("Error:", error);
+        appendMessage("bot", "Oops! Something went wrong.");
+      }
+    });
+
+    function appendMessage(sender, text) {
+      const chatEl = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = `message ${sender}`;
+      div.textContent = (sender === "user" ? "You: " : "Bot: ") + text;
+      chatEl.append(div);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+  </script>
+</body>
+</html>

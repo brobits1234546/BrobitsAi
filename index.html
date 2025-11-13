@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BroBits Chat</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="sidebar">
+    <div class="sidebar-header">
+        <i class="fas fa-robot"></i>
+        <span>Brobits AI</span>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="#" class="nav-item active">
+            <i class="fas fa-comments"></i>
+            <span>Chat</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-history"></i>
+            <span>History</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-info-circle"></i>
+            <span>About</span>
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <i class="fas fa-user-circle"></i>
+            <span>User</span>
+        </div>
+    </div>
+</div>
+<div id="main-content">
+    <div id="header">
+        <button id="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-content">
+            <i class="fas fa-robot"></i>
+            <span>Brobits</span>
+        </div>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="input-area">
+        <textarea id="user-input" placeholder="Message BroBits..." rows="1"></textarea>
+        <button id="send-button" disabled>
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+</div>
+
+<script src="https://apifreellm.com/apifree.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
