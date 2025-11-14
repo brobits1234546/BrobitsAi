@@ -1,66 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Chatbot</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    #chat { max-width: 600px; margin: 0 auto; }
-    .message { margin: 10px 0; }
-    .user { color: #2C6E49; }
-    .bot { color: #1E1E1E; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BroAI Chat (OpenRouter)</title>
+<style>
+    body { font-family: Arial; background:#0f172a; color:white; display:flex; flex-direction:column; align-items:center; height:100vh; margin:0; }
+    h1 { margin:20px; color:#38bdf8; }
+    #chat-box { width:90%; max-width:600px; height:70vh; background:#1e293b; padding:15px; border-radius:10px; overflow-y:auto; box-shadow:0 0 10px rgba(0,0,0,0.4);}
+    .msg { margin:8px 0; padding:10px 15px; border-radius:8px; max-width:75%; line-height:1.4; }
+    .user { background:#2563eb; color:white; margin-left:auto; }
+    .bot { background:#334155; color:#e2e8f0; margin-right:auto; }
+    #input-area { width:90%; max-width:600px; display:flex; margin:10px 0; }
+    input { flex:1; padding:10px; border-radius:8px; border:none; font-size:16px; outline:none; }
+    button { margin-left:10px; background:#38bdf8; color:white; border:none; border-radius:8px; padding:10px 15px; cursor:pointer; }
+    button:hover { background:#0ea5e9; }
+</style>
 </head>
 <body>
-  <div id="chat">
-    <div class="message bot">Hi! I’m your chatbot. Ask me anything.</div>
-  </div>
-  <input type="text" id="input" placeholder="Type your message…" style="width:80%;" />
-  <button id="send">Send</button>
+<h1>🤖 BroAI Chat (OpenRouter)</h1>
+<div id="chat-box"></div>
+<div id="input-area">
+  <input id="user-input" type="text" placeholder="Type something bro..." />
+  <button onclick="sendMessage()">Send</button>
+</div>
 
-  <script>
-    const endpoint = "https://torgpt.space/api/v1/chat";
+<script>
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const OPENROUTER_KEY = "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";
 
-    document.getElementById("send").addEventListener("click", async () => {
-      const inputEl = document.getElementById("input");
-      const userMsg = inputEl.value.trim();
-      if (!userMsg) return;
+function appendMessage(role, text){
+  const div = document.createElement("div");
+  div.className = "msg " + role;
+  div.textContent = text;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 
-      appendMessage("user", userMsg);
-      inputEl.value = "";
+async function sendMessage(){
+  const msg = userInput.value.trim();
+  if(!msg) return;
+  appendMessage("user", msg);
+  userInput.value = "";
+  appendMessage("bot", "Thinking...");
 
-      try {
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: [
-              { role: "user", content: userMsg }
-            ]
-          })
-        });
-
-        if (!response.ok) throw new Error("Network response was not ok");
-
-        const data = await response.json();
-        // Assuming the reply text is in data.reply or similar
-        const botReply = data.reply || data.choices?.[0]?.message?.content || "Sorry, I didn’t get that.";
-
-        appendMessage("bot", botReply);
-      } catch (error) {
-        console.error("Error:", error);
-        appendMessage("bot", "Oops! Something went wrong.");
-      }
+  try{
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENROUTER_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: msg }]
+      })
     });
 
-    function appendMessage(sender, text) {
-      const chatEl = document.getElementById("chat");
-      const div = document.createElement("div");
-      div.className = `message ${sender}`;
-      div.textContent = (sender === "user" ? "You: " : "Bot: ") + text;
-      chatEl.append(div);
-      chatEl.scrollTop = chatEl.scrollHeight;
-    }
-  </script>
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || "I didn't get that bro!";
+    chatBox.lastChild.textContent = reply;
+
+  }catch(err){
+    chatBox.lastChild.textContent = "Error connecting to OpenRouter API!";
+    console.error(err);
+  }
+}
+
+userInput.addEventListener("keypress", (e)=>{
+  if(e.key==="Enter") sendMessage();
+});
+</script>
 </body>
 </html>
